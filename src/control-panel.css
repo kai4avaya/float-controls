@@ -1,0 +1,12 @@
+/* Additional component-scoped CSS if needed */
+/* Most styles are defined in control-panel.ts for encapsulation */
+
+/* Host container styles - these are injected as classes */
+.control-panel-host {
+  position: relative;
+}
+
+.control-panel-active {
+  /* Add any active state styles here if needed */
+  /* The consuming app can override these */
+}

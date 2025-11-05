@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control Panel Web Component Demo</title>
+    <style>
+        /* Use a nice font from Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #1f2937;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .demo-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        /* Card Container */
+        .card-container {
+            position: relative;
+            width: 100%;
+            height: 18rem;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+            cursor: pointer;
+        }
+
+        .card-container:hover {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transition: box-shadow 0.3s ease;
+        }
+
+        /* Demo card backgrounds */
+        .card-1 {
+            background-image: url('https://images.unsplash.com/photo-1501854140801-50d01698950b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1575&p=80');
+        }
+
+        .card-2 {
+            background-image: url('https://images.unsplash.com/photo-1472214103451-9374bd1c798e?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80');
+        }
+
+        .card-3 {
+            background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-4.0.3&auto=format&fit=crop&w=2071&q=80');
+        }
+
+        /* Fallback for missing images */
+        .card-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: -1;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2rem;
+        }
+
+        .demo-section {
+            margin-bottom: 3rem;
+        }
+
+        .demo-title {
+            color: white;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .demo-description {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div style="width: 100%; max-width: 1200px;">
+        <h1>Control Panel Web Component Demo</h1>
+        
+        <div class="demo-section">
+            <h2 class="demo-title">Basic Usage</h2>
+            <p class="demo-description">
+                Hover over the cards below to see the control panel slide up. The component automatically adjusts to the parent container size.
+            </p>
+        </div>
+
+        <div class="demo-container">
+            <!-- Card 1: Basic with buttons -->
+            <div class="card-container card-1">
+                <control-panel-overlay 
+                    label="Mountain View" 
+                    subtitle="A stunning vista"
+                    id="panel1">
+                </control-panel-overlay>
+            </div>
+
+            <!-- Card 2: Custom styled -->
+            <div class="card-container card-2">
+                <control-panel-overlay 
+                    label="Forest Path" 
+                    subtitle="Nature's beauty"
+                    id="panel2">
+                </control-panel-overlay>
+            </div>
+
+            <!-- Card 3: With custom content via slot -->
+            <div class="card-container card-3">
+                <control-panel-overlay 
+                    label="Sunset Valley" 
+                    subtitle="Golden hour"
+                    id="panel3">
+                    <div style="margin-top: 0.5rem; font-size: 0.875rem; opacity: 0.8;">
+                        Custom slot content can go here
+                    </div>
+                </control-panel-overlay>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import the bundled version (includes lit - works in both dev server and standalone)
+        import { ControlPanelOverlay } from './dist/my-control-panel-bundled.js';
+
+        // Ensure the component is registered
+        if (!customElements.get('control-panel-overlay')) {
+            customElements.define('control-panel-overlay', ControlPanelOverlay);
+        }
+
+        // Configure panel 1 with buttons
+        const panel1 = document.getElementById('panel1');
+        if (panel1) {
+            panel1.config = {
+                buttons: [
+                    {
+                        label: 'Like',
+                        icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`,
+                        action: () => {
+                            console.log('Like clicked');
+                            alert('Liked!');
+                        }
+                    },
+                    {
+                        label: 'Share',
+                        icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>`,
+                        action: () => {
+                            console.log('Share clicked');
+                            alert('Shared!');
+                        }
+                    },
+                    {
+                        label: 'Info',
+                        icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`,
+                        action: () => {
+                            console.log('Info clicked');
+                            alert('More information');
+                        }
+                    }
+                ]
+            };
+        }
+
+        // Configure panel 2 with custom styling
+        const panel2 = document.getElementById('panel2');
+        if (panel2) {
+            panel2.config = {
+                width: '85%',
+                padding: '1.25rem',
+                backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                backdropBlur: '16px',
+                borderColor: 'rgba(255, 255, 255, 0.3)',
+                buttons: [
+                    {
+                        label: 'Explore',
+                        icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`,
+                        action: () => alert('Exploring...')
+                    }
+                ]
+            };
+        }
+
+        // Configure panel 3 - minimal
+        const panel3 = document.getElementById('panel3');
+        if (panel3) {
+            panel3.config = {
+                slideUpOffset: '-0.5rem',
+                borderRadius: '0.75rem'
+            };
+        }
+    </script>
+</body>
+</html>

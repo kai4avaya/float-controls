@@ -1,0 +1,57 @@
+{
+  "name": "floating-controls",
+  "version": "1.0.1",
+  "description": "A beautiful, customizable floating control panel web component with glassmorphic design. Automatically adjusts to parent container size and slides up on hover.",
+  "type": "module",
+  "main": "./dist/my-control-panel.js",
+  "module": "./dist/my-control-panel.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/my-control-panel.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "assets"
+  ],
+  "scripts": {
+    "build": "vite build && tsc",
+    "build:demo": "vite build --config vite.demo.config.ts",
+    "dev": "vite",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:watch": "vitest --watch"
+  },
+  "keywords": [
+    "web-component",
+    "control-panel",
+    "lit",
+    "floating-panel",
+    "glassmorphism",
+    "hover-controls",
+    "ui-component",
+    "custom-element",
+    "floating-ui",
+    "card-controls",
+    "interactive-panel"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bakukai/floating-controls.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "peerDependencies": {
+    "lit": "^3.0.0 || ^4.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.8",
+    "vitest": "^1.1.0"
+  }
+}
