@@ -1,6 +1,6 @@
 {
   "name": "floating-controls",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A beautiful, customizable floating control panel web component with glassmorphic design. Automatically adjusts to parent container size and slides up on hover.",
   "type": "module",
   "main": "./dist/my-control-panel.js",
@@ -39,7 +39,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bakukai/floating-controls.git"
+    "url": "git+https://github.com/kai4avaya/float-controls.git"
   },
   "author": "",
   "license": "MIT",

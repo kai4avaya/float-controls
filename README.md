@@ -1,29 +1,32 @@
 # Floating Controls
 
-A beautiful, customizable floating control panel web component built with Lit. Features a stunning glassmorphic design that automatically adjusts to its parent container size and elegantly slides up on hover. Perfect for card interfaces, image galleries, dashboards, and any UI that needs elegant hover controls.
+A beautiful, customizable floating control panel web component built with Lit. Features a stunning glassmorphic design that automatically adjusts to its parent container size and elegantly slides up **on hover** - no clicks required! Perfect for card interfaces, image galleries, dashboards, and any UI that needs elegant hover-activated controls.
 
 ![Version](https://img.shields.io/npm/v/floating-controls)
 ![License](https://img.shields.io/npm/l/floating-controls)
 ![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue)
 
-## Demo
+## ?? Live Demo
+
+**Try it now:** [View Demo on GitHub Pages](https://kai4avaya.github.io/float-controls/)
 
 ![Demo](assets/demo-controls.gif)
 
-The control panel elegantly slides up from the bottom when you hover over the parent container, providing a beautiful glassmorphic interface for your controls.
+The control panel elegantly slides up from the bottom when you **hover** over the parent container - no clicking required! It provides a beautiful glassmorphic interface for your controls with smooth animations and customizable styling.
 
 ## Features
 
-- **Glassmorphic Design**: Beautiful backdrop blur and translucent styling out of the box
-- **Framework Agnostic**: Works with React, Vue, Angular, Svelte, or vanilla HTML/JS
-- **Auto-sizing**: Automatically adjusts to parent container dimensions (91.666667% width by default)
-- **Highly Customizable**: Configure appearance, animations, and controls entirely via TypeScript
-- **Hover Activation**: Smoothly slides up from the bottom when parent is hovered
-- **Button System**: Built-in button support with custom actions and SVG icons
-- **Slot Support**: Add custom content via HTML slots
-- **Responsive**: Works seamlessly across all screen sizes
-- **Zero Dependencies**: Only requires Lit (peer dependency)
-- **TypeScript**: Full TypeScript support with type definitions included
+- **? Hover-Only Activation**: No clicks required! The panel smoothly slides up on hover and hides when you move away
+- **?? Glassmorphic Design**: Beautiful backdrop blur and translucent styling out of the box
+- **? Smooth Animations**: Elegant slide-up transitions with customizable timing and easing
+- **?? Framework Agnostic**: Works with React, Vue, Angular, Svelte, or vanilla HTML/JS
+- **?? Auto-sizing**: Automatically adjusts to parent container dimensions (91.666667% width by default)
+- **??? Highly Customizable**: Configure appearance, animations, and controls entirely via TypeScript
+- **?? Button System**: Built-in button support with custom actions and SVG icons
+- **?? Slot Support**: Add custom content via HTML slots
+- **?? Responsive**: Works seamlessly across all screen sizes
+- **?? Zero Dependencies**: Only requires Lit (peer dependency)
+- **?? TypeScript**: Full TypeScript support with type definitions included
 
 ## Installation
 
@@ -307,8 +310,8 @@ panel.config = {
 ### Setup
 
 ```bash
-git clone https://github.com/bakukai/floating-controls.git
-cd floating-controls
+git clone https://github.com/kai4avaya/float-controls.git
+cd float-controls
 npm install
 ```
 
@@ -373,6 +376,19 @@ npm test
 ## License
 
 MIT License - feel free to use in personal and commercial projects.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## Acknowledgments
+
+Built with [Lit](https://lit.dev/) - a simple library for building fast, lightweight web components.
+
+---
+
+Made with ?? for the web component community
+jects.
 
 ## Contributing
 
