@@ -6,26 +6,26 @@ A beautiful, customizable floating control panel web component built with Lit. F
 ![License](https://img.shields.io/npm/l/floating-controls)
 ![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue)
 
-## ?? Demo
+## Demo
 
 ![Demo](assets/demo-controls.gif)
 
 The control panel elegantly slides up from the bottom when you hover over the parent container, providing a beautiful glassmorphic interface for your controls.
 
-## ? Features
+## Features
 
-- ?? **Glassmorphic Design**: Beautiful backdrop blur and translucent styling out of the box
-- ?? **Framework Agnostic**: Works with React, Vue, Angular, Svelte, or vanilla HTML/JS
-- ?? **Auto-sizing**: Automatically adjusts to parent container dimensions (91.666667% width by default)
-- ??? **Highly Customizable**: Configure appearance, animations, and controls entirely via TypeScript
-- ??? **Hover Activation**: Smoothly slides up from the bottom when parent is hovered
-- ?? **Button System**: Built-in button support with custom actions and SVG icons
-- ?? **Slot Support**: Add custom content via HTML slots
-- ?? **Responsive**: Works seamlessly across all screen sizes
-- ?? **Zero Dependencies**: Only requires Lit (peer dependency)
-- ?? **TypeScript**: Full TypeScript support with type definitions included
+- **Glassmorphic Design**: Beautiful backdrop blur and translucent styling out of the box
+- **Framework Agnostic**: Works with React, Vue, Angular, Svelte, or vanilla HTML/JS
+- **Auto-sizing**: Automatically adjusts to parent container dimensions (91.666667% width by default)
+- **Highly Customizable**: Configure appearance, animations, and controls entirely via TypeScript
+- **Hover Activation**: Smoothly slides up from the bottom when parent is hovered
+- **Button System**: Built-in button support with custom actions and SVG icons
+- **Slot Support**: Add custom content via HTML slots
+- **Responsive**: Works seamlessly across all screen sizes
+- **Zero Dependencies**: Only requires Lit (peer dependency)
+- **TypeScript**: Full TypeScript support with type definitions included
 
-## ?? Installation
+## Installation
 
 ```bash
 npm install floating-controls
@@ -37,7 +37,7 @@ npm install floating-controls
 npm install lit floating-controls
 ```
 
-## ?? Quick Start
+## Quick Start
 
 ### Basic Usage
 
@@ -201,7 +201,7 @@ onMounted(() => {
 </script>
 ```
 
-## ?? API Reference
+## API Reference
 
 ### Component: `<control-panel-overlay>`
 
@@ -268,7 +268,7 @@ You can use these classes to style the parent when the panel is active:
 }
 ```
 
-## ?? Styling Examples
+## Styling Examples
 
 ### Dark Theme Panel
 
@@ -302,7 +302,7 @@ panel.config = {
 };
 ```
 
-## ?? Development
+## Development
 
 ### Setup
 
@@ -349,7 +349,7 @@ npm run preview
 npm test
 ```
 
-## ?? How It Works
+## How It Works
 
 1. **Parent Detection**: The component automatically detects its parent element on mount
 2. **Position Injection**: Adds `position: relative` to the parent if not already set
@@ -358,27 +358,27 @@ npm test
 5. **Styling**: Uses CSS transforms and opacity for smooth animations
 6. **Customization**: All styling and controls configurable via the `config` property
 
-## ?? Browser Support
+## Browser Support
 
-- ? Chrome/Edge (latest)
-- ? Firefox (latest)
-- ? Safari (latest)
-- ? Any browser supporting:
+- Chrome/Edge (latest)
+- Firefox (latest)
+- Safari (latest)
+- Any browser supporting:
   - Web Components (Custom Elements v1)
   - CSS `backdrop-filter`
   - ES Modules
 
 **Note**: For older browsers, you may need polyfills for Web Components and CSS backdrop-filter.
 
-## ?? License
+## License
 
 MIT License - feel free to use in personal and commercial projects.
 
-## ?? Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## ?? Acknowledgments
+## Acknowledgments
 
 Built with [Lit](https://lit.dev/) - a simple library for building fast, lightweight web components.
 

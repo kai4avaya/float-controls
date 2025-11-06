@@ -54,16 +54,32 @@ export class ControlPanelOverlay extends LitElement {
       transition: transform 0.5s ease-out, opacity 0.5s ease;
       opacity: 0;
       
-      /* Prevents interaction when hidden */
-      pointer-events: none; 
+      /* Prevents interaction when hidden - ensure ALL descendants also respect this */
+      pointer-events: none !important; 
       z-index: 100;
     }
 
-    /* Visible state */
-    .panel-visible {
+    /* When hidden, ensure ALL children also ignore pointer events */
+    .panel-base * {
+      pointer-events: none !important;
+    }
+
+    /* Visible state - override pointer-events for the panel */
+    .panel-base.panel-visible {
       transform: translate(-50%, -1rem); 
       opacity: 1;
-      pointer-events: auto;
+      pointer-events: auto !important;
+    }
+
+    /* When visible, re-enable pointer events - this must have higher specificity */
+    .panel-base.panel-visible * {
+      pointer-events: auto !important;
+    }
+
+    /* Ensure buttons are always clickable when panel is visible */
+    .panel-base.panel-visible .control-button {
+      pointer-events: auto !important;
+      cursor: pointer;
     }
 
     /* Button styles */
@@ -171,7 +187,7 @@ export class ControlPanelOverlay extends LitElement {
 
     if (this.isVisible) {
       const offset = this.config.slideUpOffset || '-1rem';
-      style += ` transform: translate(-50%, ${offset}); opacity: 1; pointer-events: auto;`;
+      style += ` transform: translate(-50%, ${offset}); opacity: 1;`;
     }
 
     return style;
