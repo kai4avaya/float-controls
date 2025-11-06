@@ -53,10 +53,12 @@ jobs:
           # Create a clean directory structure
           mkdir -p _site
           # Copy essential files
-          cp index.html _site/ || cp demo.html _site/index.html
+          cp index.html _site/index.html 2>/dev/null || cp demo.html _site/index.html
           cp -r dist _site/
-          cp -r assets _site/ 2>/dev/null || true
-          cp README.md _site/ 2>/dev/null || true
+          if [ -d assets ]; then cp -r assets _site/; fi
+          if [ -f README.md ]; then cp README.md _site/; fi
+          # List files to verify
+          ls -la _site/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
