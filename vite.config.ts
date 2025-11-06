@@ -17,10 +17,6 @@ export default defineConfig(({ command, mode }) => {
           '@': resolve(__dirname, './src')
         }
       },
-      // Don't optimize the bundled file
-      optimizeDeps: {
-        exclude: ['lit']
-      },
       // Serve dist files as static assets
       appType: 'mpa' // Multi-page app mode
     };
@@ -35,14 +31,7 @@ export default defineConfig(({ command, mode }) => {
         fileName: 'my-control-panel',
         formats: ['es']
       },
-      rollupOptions: {
-        external: ['lit'],
-        output: {
-          globals: {
-            lit: 'lit'
-          }
-        }
-      },
+      rollupOptions: {},
       outDir: 'dist',
       sourcemap: true
     },

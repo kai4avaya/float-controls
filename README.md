@@ -1,6 +1,6 @@
 # Floating Controls
 
-A beautiful, customizable floating control panel web component built with Lit. Features a stunning glassmorphic design that automatically adjusts to its parent container size and elegantly slides up **on hover** - no clicks required! Perfect for card interfaces, image galleries, dashboards, and any UI that needs elegant hover-activated controls.
+A beautiful, customizable floating control panel web component built with vanilla Web Components. Features a stunning glassmorphic design that automatically adjusts to its parent container size and elegantly slides up **on hover** - no clicks required! Perfect for card interfaces, image galleries, dashboards, and any UI that needs elegant hover-activated controls.
 
 ![Version](https://img.shields.io/npm/v/floating-controls)
 ![License](https://img.shields.io/npm/l/floating-controls)
@@ -25,7 +25,7 @@ The control panel elegantly slides up from the bottom when you **hover** over th
 - **?? Button System**: Built-in button support with custom actions and SVG icons
 - **?? Slot Support**: Add custom content via HTML slots
 - **?? Responsive**: Works seamlessly across all screen sizes
-- **?? Zero Dependencies**: Only requires Lit (peer dependency)
+- **?? Zero Dependencies**: Pure vanilla Web Components - no framework dependencies
 - **?? TypeScript**: Full TypeScript support with type definitions included
 
 ## Installation
@@ -34,11 +34,7 @@ The control panel elegantly slides up from the bottom when you **hover** over th
 npm install floating-controls
 ```
 
-**Note**: This package requires `lit` as a peer dependency. If you don't already have it:
-
-```bash
-npm install lit floating-controls
-```
+**Note**: This package has zero dependencies - it's built with pure Web Components standards!
 
 ## Quick Start
 
@@ -318,10 +314,10 @@ npm install
 ### Build
 
 ```bash
-# Build library version (requires lit as peer dependency)
+# Build library version (zero dependencies)
 npm run build
 
-# Build bundled demo version (includes lit)
+# Build bundled demo version
 npm run build:demo
 ```
 
@@ -373,6 +369,27 @@ npm test
 
 **Note**: For older browsers, you may need polyfills for Web Components and CSS backdrop-filter.
 
+## Changelog
+
+### Version 2.0.0 (Breaking Changes)
+
+**Major Migration: Removed Lit Dependency**
+
+- ✅ **Converted from Lit to vanilla Web Components** - No framework dependencies required!
+- ✅ **Fixed bug with SVG icons in buttons** - Resolved `unsafeHTML` directive error
+- ✅ **Zero dependencies** - Pure Web Components standards implementation
+- ✅ **Smaller bundle size** - Reduced from requiring Lit to standalone component
+- ✅ **Same API** - All existing functionality preserved, no API changes
+
+**Migration Guide:**
+- If you were using version 1.x, simply update to 2.0.0 - no code changes needed!
+- Remove `lit` from your dependencies if you're not using it elsewhere
+- The component now works without any peer dependencies
+
+### Version 1.0.5
+
+- Initial release with Lit-based implementation
+
 ## License
 
 MIT License - feel free to use in personal and commercial projects.
@@ -383,20 +400,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Acknowledgments
 
-Built with [Lit](https://lit.dev/) - a simple library for building fast, lightweight web components.
-
----
-
-Made with ?? for the web component community
-jects.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## Acknowledgments
-
-Built with [Lit](https://lit.dev/) - a simple library for building fast, lightweight web components.
+Built with pure Web Components standards - no framework dependencies required!
 
 ---
 

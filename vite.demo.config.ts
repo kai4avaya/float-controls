@@ -10,7 +10,7 @@ export default defineConfig({
       formats: ['es']
     },
     rollupOptions: {
-      // Don't externalize lit - bundle it instead
+      // Bundle all dependencies (no external dependencies)
       external: [],
       output: {
         globals: {}

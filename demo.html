@@ -217,8 +217,9 @@
     </div>
 
     <script type="module">
-        // Import the bundled version (includes lit - works in both dev server and standalone)
-        import { ControlPanelOverlay } from './dist/my-control-panel-bundled.js';
+        // Import from source in dev mode (Vite handles bundling)
+        // In production, use './dist/my-control-panel-bundled.js' after running 'npm run build:demo'
+        import { ControlPanelOverlay } from './src/index.ts';
 
         // Ensure the component is registered
         if (!customElements.get('control-panel-overlay')) {
