@@ -395,6 +395,230 @@ npm test
 6. **Styling**: Uses CSS transforms and opacity for smooth slide animations
 7. **Customization**: All styling and controls configurable via the `config` property
 
+## Architecture
+
+### Component Architecture
+
+```mermaid
+graph TB
+    subgraph "Web Component Layer"
+        CPO[ControlPanelOverlay<br/>Custom Element]
+        SR[Shadow Root]
+        PB[Panel Base Element]
+        PC[Panel Content]
+        BTN[Button Elements]
+    end
+    
+    subgraph "Core Modules"
+        MH[Mouse Handler<br/>mouse-handler.ts]
+        PV[Panel Visibility<br/>panel-visibility.ts]
+        REN[Renderer<br/>renderer.ts]
+        STY[Styles<br/>styles.ts]
+        TYP[Types<br/>types.ts]
+    end
+    
+    subgraph "External"
+        PARENT[Parent Container<br/>HTMLElement]
+        USER[User Config<br/>ControlPanelConfig]
+    end
+    
+    CPO -->|creates| SR
+    CPO -->|uses| MH
+    CPO -->|uses| PV
+    CPO -->|uses| REN
+    CPO -->|uses| STY
+    CPO -->|uses| TYP
+    
+    SR -->|contains| PB
+    PB -->|contains| PC
+    PC -->|contains| BTN
+    
+    CPO -->|attaches to| PARENT
+    USER -->|configures| CPO
+    
+    REN -->|uses| STY
+    REN -->|uses| TYP
+    MH -->|uses| TYP
+    PV -->|uses| TYP
+    
+    style CPO fill:#667eea,stroke:#764ba2,stroke-width:3px,color:#fff
+    style SR fill:#e0e7ff,stroke:#667eea
+    style PB fill:#e0e7ff,stroke:#667eea
+    style PARENT fill:#fef3c7,stroke:#f59e0b
+```
+
+### Event Flow & Lifecycle
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Parent as Parent Container
+    participant CPO as ControlPanelOverlay
+    participant MH as Mouse Handler
+    participant PV as Panel Visibility
+    participant Renderer
+    
+    Note over CPO: Component Initialization
+    User->>Parent: Place component in DOM
+    CPO->>CPO: connectedCallback()
+    CPO->>Parent: Detect parent element
+    CPO->>Parent: Add position: relative
+    CPO->>Parent: Add 'control-panel-host' class
+    CPO->>Renderer: createPanel()
+    Renderer->>CPO: Create panel in shadow DOM
+    
+    Note over CPO,Parent: Mouse Interaction Flow
+    User->>Parent: Move mouse over container
+    Parent->>CPO: mouseenter event
+    CPO->>MH: handleMouseEnter()
+    MH->>PV: showPanel()
+    PV->>CPO: Add 'panel-visible' class
+    CPO->>Parent: Add 'control-panel-active' class
+    PV->>PV: Set hideTimeout (1500ms default)
+    
+    User->>Parent: Continue moving mouse
+    Parent->>CPO: mousemove event
+    CPO->>PV: showPanel() (resets timeout)
+    
+    User->>Parent: Stop moving mouse
+    Note over PV: After hideDelay timeout
+    PV->>PV: hideTimeout fires
+    PV->>CPO: hidePanel()
+    CPO->>CPO: Remove 'panel-visible' class
+    CPO->>Parent: Remove 'control-panel-active' class
+    
+    User->>Parent: Move mouse away
+    Parent->>CPO: mouseleave event
+    CPO->>MH: handleMouseLeave()
+    MH->>MH: Check if mouse still in bounds
+    alt Mouse truly left
+        MH->>PV: hidePanel()
+        PV->>CPO: Remove visibility classes
+    else Mouse still in container
+        MH->>CPO: Keep panel visible
+    end
+    
+    Note over CPO: Component Cleanup
+    User->>Parent: Remove component from DOM
+    CPO->>CPO: disconnectedCallback()
+    CPO->>Parent: Remove event listeners
+    CPO->>Parent: Remove classes
+    CPO->>PV: Clear hideTimeout
+```
+
+### Module Dependencies & Data Flow
+
+```mermaid
+graph LR
+    subgraph "Input"
+        CONFIG[ControlPanelConfig]
+        ATTRS[HTML Attributes<br/>label, subtitle]
+    end
+    
+    subgraph "ControlPanelOverlay"
+        STATE[Component State<br/>isVisible, isMouseInside<br/>hideTimeout, hostElement]
+    end
+    
+    subgraph "Mouse Handler Module"
+        MH1[handleContainerMouseLeave]
+        MH2[handlePanelMouseLeave]
+        MH3[createGlobalMouseHandler]
+        MH4[isMouseWithinHostBounds]
+    end
+    
+    subgraph "Panel Visibility Module"
+        PV1[showPanel]
+        PV2[hidePanel]
+        PV3[updatePanelVisibility]
+    end
+    
+    subgraph "Renderer Module"
+        REN1[createPanel]
+        REN2[updatePanelContent]
+    end
+    
+    subgraph "Styles Module"
+        STY1[PANEL_STYLES]
+        STY2[getPanelStyleString]
+    end
+    
+    subgraph "Output"
+        DOM[Shadow DOM Elements]
+        CSS[CSS Classes & Styles]
+    end
+    
+    CONFIG --> STATE
+    ATTRS --> STATE
+    STATE --> MH1
+    STATE --> MH2
+    STATE --> MH3
+    STATE --> PV1
+    STATE --> PV2
+    STATE --> REN2
+    
+    MH1 --> PV2
+    MH2 --> PV2
+    MH3 --> PV1
+    
+    PV1 --> CSS
+    PV2 --> CSS
+    PV3 --> CSS
+    
+    CONFIG --> STY2
+    STY2 --> REN1
+    STY1 --> REN1
+    REN1 --> DOM
+    REN2 --> DOM
+    
+    style CONFIG fill:#fef3c7,stroke:#f59e0b
+    style STATE fill:#dbeafe,stroke:#3b82f6
+    style DOM fill:#dcfce7,stroke:#22c55e
+    style CSS fill:#fce7f3,stroke:#ec4899
+```
+
+### Runtime Behavior Flow
+
+```mermaid
+stateDiagram-v2
+    [*] --> Initialized: Component mounted
+    
+    Initialized --> Hidden: Initial render
+    Hidden --> Showing: Mouse enters container
+    Showing --> Visible: Animation complete
+    
+    Visible --> Visible: Mouse moves (reset timeout)
+    Visible --> Hiding: Mouse stops moving (timeout)
+    Visible --> Hiding: Mouse leaves container
+    
+    Hiding --> Hidden: Animation complete
+    
+    Hidden --> [*]: Component unmounted
+    Visible --> [*]: Component unmounted
+    
+    note right of Hidden
+        Panel below viewport
+        opacity: 0
+        pointer-events: none
+    end note
+    
+    note right of Visible
+        Panel visible
+        opacity: 1
+        pointer-events: auto
+        hideTimeout active
+    end note
+    
+    note right of Showing
+        Slide-up animation
+        transform: translateY()
+    end note
+    
+    note right of Hiding
+        Slide-down animation
+        transform: translateY(100%)
+    end note
+```
+
 ## Usage Guidelines
 
 ### ✅ Correct Usage
