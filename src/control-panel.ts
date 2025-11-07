@@ -14,6 +14,7 @@ export interface ControlPanelConfig {
   borderColor?: string; // e.g., 'rgba(255, 255, 255, 0.2)'
   transitionDuration?: string; // e.g., '0.5s'
   slideUpOffset?: string; // e.g., '-1rem' or '-16px'
+  hideDelay?: number; // Delay in milliseconds before hiding after mouse stops moving (default: 1500ms)
   buttons?: ControlButton[];
 }
 
@@ -24,6 +25,8 @@ export class ControlPanelOverlay extends HTMLElement {
   private isVisible: boolean = false;
   private hostElement: HTMLElement | null = null;
   private panelBase: HTMLElement | null = null;
+  private hideTimeout: number | null = null;
+  private isMouseInside: boolean = false;
 
   static get observedAttributes() {
     return ['label', 'subtitle'];
@@ -239,12 +242,10 @@ export class ControlPanelOverlay extends HTMLElement {
     style += `-webkit-backdrop-filter: blur(${backdropBlur}); `;
     style += `backdrop-filter: blur(${backdropBlur}); `;
     style += `border-color: ${borderColor}; `;
-    style += `transition-duration: ${transitionDuration};`;
+    style += `transition: transform ${transitionDuration} ease-out, opacity ${transitionDuration} ease;`;
 
-    if (this.isVisible) {
-      const offset = this.config.slideUpOffset || '-1rem';
-      style += ` transform: translate(-50%, ${offset}); opacity: 1;`;
-    }
+    // Note: transform and opacity are controlled by CSS class .panel-visible
+    // We don't set them inline to allow CSS transitions to work properly
 
     return style;
   }
@@ -284,6 +285,12 @@ export class ControlPanelOverlay extends HTMLElement {
   }
     
   disconnectedCallback() {
+    // Clear any pending timeout
+    if (this.hideTimeout !== null) {
+      clearTimeout(this.hideTimeout);
+      this.hideTimeout = null;
+    }
+
     if (this.hostElement) {
       this.removeHostEventListeners(this.hostElement);
       
@@ -298,24 +305,101 @@ export class ControlPanelOverlay extends HTMLElement {
   private addHostEventListeners(host: HTMLElement) {
     host.addEventListener('mouseenter', this.handleMouseEnter);
     host.addEventListener('mouseleave', this.handleMouseLeave);
+    host.addEventListener('mousemove', this.handleMouseMove);
+    // Also listen on the panel itself to keep it visible when hovering over it
+    this.addEventListener('mouseenter', this.handlePanelMouseEnter);
+    this.addEventListener('mouseleave', this.handlePanelMouseLeave);
+    this.addEventListener('mousemove', this.handleMouseMove);
   }
 
   private removeHostEventListeners(host: HTMLElement) {
     host.removeEventListener('mouseenter', this.handleMouseEnter);
     host.removeEventListener('mouseleave', this.handleMouseLeave);
+    host.removeEventListener('mousemove', this.handleMouseMove);
+    this.removeEventListener('mouseenter', this.handlePanelMouseEnter);
+    this.removeEventListener('mouseleave', this.handlePanelMouseLeave);
+    this.removeEventListener('mousemove', this.handleMouseMove);
   }
 
   private handleMouseEnter = () => {
-    this.isVisible = true;
-    // Inject class for the consuming app to style the parent
-    this.hostElement?.classList.add('control-panel-active');
-    this.classList.add("panel-host-visible");
-    this.updateRender();
+    this.isMouseInside = true;
+    this.showPanel();
   }
 
-  private handleMouseLeave = () => {
+  private handleMouseLeave = (e: MouseEvent) => {
+    // Check if mouse is moving to the panel
+    const relatedTarget = e.relatedTarget as Node | null;
+    if (relatedTarget && this.contains(relatedTarget)) {
+      // Mouse is moving from host to panel - keep visible
+      return;
+    }
+    // Mouse is truly leaving - hide immediately
+    this.isMouseInside = false;
+    this.hidePanelImmediately();
+  }
+
+  private handlePanelMouseEnter = () => {
+    // When mouse enters the panel itself, keep it visible
+    // Don't change isMouseInside here - it's already true from host
+    this.showPanel();
+  }
+
+  private handlePanelMouseLeave = (e: MouseEvent) => {
+    // When mouse leaves the panel, check if we're entering the host
+    // Use relatedTarget to see where the mouse is going
+    const relatedTarget = e.relatedTarget as Node | null;
+    if (relatedTarget && this.hostElement && this.hostElement.contains(relatedTarget)) {
+      // Mouse is moving from panel to host - keep visible
+      return;
+    }
+    // Mouse is leaving both panel and host - hide immediately
+    this.isMouseInside = false;
+    this.hidePanelImmediately();
+  }
+
+  private handleMouseMove = () => {
+    // On ANY mouse movement, show the panel immediately
+    if (this.isMouseInside) {
+      this.showPanel();
+    }
+  }
+
+  private showPanel() {
+    // Clear any pending hide timeout
+    if (this.hideTimeout !== null) {
+      clearTimeout(this.hideTimeout);
+      this.hideTimeout = null;
+    }
+
+    // Show immediately if not already visible
+    if (!this.isVisible) {
+      this.isVisible = true;
+      this.hostElement?.classList.add('control-panel-active');
+      this.classList.add("panel-host-visible");
+      this.updateRender();
+    }
+
+    // Set timeout to hide after delay if mouse stops moving
+    const delay = this.config.hideDelay || 1500; // Default 1.5 seconds
+    this.hideTimeout = window.setTimeout(() => {
+      // Only hide if mouse is still inside (user stopped moving)
+      if (this.isMouseInside) {
+        this.hidePanelImmediately();
+      }
+      this.hideTimeout = null;
+    }, delay);
+  }
+
+  private hidePanelImmediately() {
+    // Clear any pending timeout
+    if (this.hideTimeout !== null) {
+      clearTimeout(this.hideTimeout);
+      this.hideTimeout = null;
+    }
+
+    // Hide immediately
     this.isVisible = false;
-    this.hostElement?.classList.remove('control-panel-active'); 
+    this.hostElement?.classList.remove('control-panel-active');
     this.classList.remove("panel-host-visible");
     this.updateRender();
   }
