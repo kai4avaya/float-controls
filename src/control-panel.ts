@@ -27,6 +27,9 @@ export class ControlPanelOverlay extends HTMLElement {
   private panelBase: HTMLElement | null = null;
   private hideTimeout: number | null = null;
   private isMouseInside: boolean = false;
+  private currentMouseX: number = 0;
+  private currentMouseY: number = 0;
+  private globalMouseMoveHandler: ((e: MouseEvent) => void) | null = null;
 
   static get observedAttributes() {
     return ['label', 'subtitle'];
@@ -308,6 +311,10 @@ export class ControlPanelOverlay extends HTMLElement {
   // --- Event Handling ---
 
   private addHostEventListeners(host: HTMLElement) {
+    // Use global mouse tracking for reliable detection even with pointer-events: none
+    this.setupGlobalMouseTracking();
+    
+    // Keep element-level listeners as fallback for normal cases
     host.addEventListener('mouseenter', this.handleMouseEnter);
     host.addEventListener('mouseleave', this.handleMouseLeave);
     host.addEventListener('mousemove', this.handleMouseMove);
@@ -318,6 +325,8 @@ export class ControlPanelOverlay extends HTMLElement {
   }
 
   private removeHostEventListeners(host: HTMLElement) {
+    this.removeGlobalMouseTracking();
+    
     host.removeEventListener('mouseenter', this.handleMouseEnter);
     host.removeEventListener('mouseleave', this.handleMouseLeave);
     host.removeEventListener('mousemove', this.handleMouseMove);
@@ -326,18 +335,95 @@ export class ControlPanelOverlay extends HTMLElement {
     this.removeEventListener('mousemove', this.handleMouseMove);
   }
 
+  // Global mouse tracking - works even when host has pointer-events: none
+  private setupGlobalMouseTracking() {
+    if (this.globalMouseMoveHandler) return; // Already set up
+    
+    this.globalMouseMoveHandler = (e: MouseEvent) => {
+      this.currentMouseX = e.clientX;
+      this.currentMouseY = e.clientY;
+      
+      // Check if mouse is within host bounds
+      if (this.hostElement) {
+        const wasInside = this.isMouseInside;
+        const isNowInside = this.isMouseWithinHostBounds(e.clientX, e.clientY);
+        
+        // In test environments, getBoundingClientRect might not work, so don't rely on it
+        // for hiding - only use it for showing. Use element-level events for hiding.
+        if (!wasInside && isNowInside) {
+          // Mouse just entered host
+          this.isMouseInside = true;
+          this.showPanel();
+        } else if (wasInside && isNowInside) {
+          // Mouse is moving within host - keep panel visible
+          // Don't hide based on global tracking in test environments where bounds don't work
+          this.showPanel();
+        }
+        // Note: We don't hide based on global tracking here because:
+        // 1. getBoundingClientRect() may not work in test environments
+        // 2. Element-level mouseleave events are more reliable for detecting exit
+      }
+    };
+    
+    document.addEventListener('mousemove', this.globalMouseMoveHandler, { passive: true });
+  }
+
+  private removeGlobalMouseTracking() {
+    if (this.globalMouseMoveHandler) {
+      document.removeEventListener('mousemove', this.globalMouseMoveHandler);
+      this.globalMouseMoveHandler = null;
+    }
+  }
+
+  // Check if mouse coordinates are within host element bounds
+  private isMouseWithinHostBounds(x: number, y: number): boolean {
+    if (!this.hostElement) return false;
+    
+    try {
+      const rect = this.hostElement.getBoundingClientRect();
+      return (
+        x >= rect.left &&
+        x <= rect.right &&
+        y >= rect.top &&
+        y <= rect.bottom
+      );
+    } catch (error) {
+      return false;
+    }
+  }
+
   private handleMouseEnter = () => {
     this.isMouseInside = true;
     this.showPanel();
   }
 
   private handleMouseLeave = (e: MouseEvent) => {
-    // Check if mouse is moving to the panel
+    // FIRST: Check relatedTarget
     const relatedTarget = e.relatedTarget as Node | null;
-    if (relatedTarget && this.contains(relatedTarget)) {
-      // Mouse is moving from host to panel - keep visible
-      return;
+    if (relatedTarget && this.hostElement) {
+      // Mouse is moving to panel OR to another element within the host container
+      const isMovingWithinHost = this.contains(relatedTarget) || this.hostElement.contains(relatedTarget);
+      if (isMovingWithinHost) {
+        return;
+      }
     }
+    
+    // SECOND: Use elementFromPoint fallback when relatedTarget is unreliable
+    if (this.hostElement && e.clientX !== undefined && e.clientY !== undefined) {
+      try {
+        const elementAtPoint = document.elementFromPoint(e.clientX, e.clientY);
+        if (elementAtPoint && (
+          elementAtPoint === this.hostElement ||
+          this.hostElement.contains(elementAtPoint) ||
+          elementAtPoint === this
+        )) {
+          return;
+        }
+      } catch (error) {
+        // elementFromPoint might not be available in all environments
+      }
+    }
+    
     // Mouse is truly leaving - slide down
     this.isMouseInside = false;
     this.hidePanelWithSlide();
@@ -350,28 +436,69 @@ export class ControlPanelOverlay extends HTMLElement {
   }
 
   private handlePanelMouseLeave = (e: MouseEvent) => {
-    // When mouse leaves the panel, check if we're entering the host
-    // Use relatedTarget to see where the mouse is going
-    const relatedTarget = e.relatedTarget as Node | null;
-    if (relatedTarget && this.hostElement && this.hostElement.contains(relatedTarget)) {
-      // Mouse is moving from panel to host - keep visible
-      return;
+    // FIRST: Check relatedTarget - this is most reliable in test environments
+    // where getBoundingClientRect might not work correctly
+    if (this.hostElement && e.relatedTarget) {
+      const relatedTarget = e.relatedTarget as Node | null;
+      const isInHost = relatedTarget && (
+        relatedTarget === this.hostElement ||
+        this.hostElement.contains(relatedTarget) ||
+        relatedTarget === this
+      );
+      if (isInHost) {
+        // Mouse is moving to another part of host - keep panel visible
+        return;
+      }
     }
-    // Mouse is leaving both panel and host - slide down
-    this.isMouseInside = false;
-    this.hidePanelWithSlide();
+    
+    // SECOND: Use elementFromPoint fallback when relatedTarget is unreliable
+    // This is needed when relatedTarget is null or getBoundingClientRect doesn't work
+    if (this.hostElement && e.clientX !== undefined && e.clientY !== undefined) {
+      try {
+        const elementAtPoint = document.elementFromPoint(e.clientX, e.clientY);
+        if (elementAtPoint && (
+          elementAtPoint === this.hostElement ||
+          this.hostElement.contains(elementAtPoint) ||
+          elementAtPoint === this
+        )) {
+          return;
+        }
+      } catch (error) {
+        // elementFromPoint might not be available in all environments
+      }
+    }
+    
+    // THIRD: Use bounding rect check (may not work in test environments)
+    if (this.hostElement && e.clientX !== undefined && e.clientY !== undefined) {
+      const stillInHost = this.isMouseWithinHostBounds(e.clientX, e.clientY);
+      if (stillInHost) {
+        return;
+      }
+    }
+
+    // FOURTH: Fallback to global tracking coordinates
+    const globalCheck = this.isMouseWithinHostBounds(this.currentMouseX, this.currentMouseY);
+    if (!globalCheck) {
+      this.isMouseInside = false;
+      this.hidePanelWithSlide();
+    }
   }
 
-  private handleMouseMove = () => {
+  private handleMouseMove = (e: MouseEvent) => {
     // On ANY mouse movement, show the panel (slide up)
+    // This resets the hide timeout, keeping the panel visible while user moves mouse
     if (this.isMouseInside) {
+      console.log('[handleMouseMove]', 'Mouse moving, resetting hide timeout, isMouseInside:', this.isMouseInside);
       this.showPanel();
+    } else {
+      console.log('[handleMouseMove]', 'Mouse moving but isMouseInside is false - ignoring');
     }
   }
 
   private showPanel() {
     // Clear any pending hide timeout
     if (this.hideTimeout !== null) {
+      console.log('[showPanel]', 'Clearing existing timeout, resetting');
       clearTimeout(this.hideTimeout);
       this.hideTimeout = null;
     }
@@ -386,7 +513,9 @@ export class ControlPanelOverlay extends HTMLElement {
 
     // Set timeout to hide after delay if mouse stops moving
     const delay = this.config.hideDelay || 1500; // Default 1.5 seconds
+    console.log('[showPanel]', 'Setting hide timeout:', delay, 'ms');
     this.hideTimeout = window.setTimeout(() => {
+      console.log('[showPanel]', 'Hide timeout fired, mouse still inside:', this.isMouseInside);
       // Only hide if mouse is still inside (user stopped moving)
       if (this.isMouseInside) {
         this.hidePanelWithSlide();
@@ -398,6 +527,7 @@ export class ControlPanelOverlay extends HTMLElement {
   private hidePanelWithSlide() {
     // Clear any pending timeout
     if (this.hideTimeout !== null) {
+      console.log('[hidePanelWithSlide]', 'Clearing timeout and hiding');
       clearTimeout(this.hideTimeout);
       this.hideTimeout = null;
     }

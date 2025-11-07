@@ -1,6 +1,6 @@
 {
   "name": "floating-controls",
-  "version": "2.1.4",
+  "version": "2.1.8",
   "description": "A beautiful, customizable floating control panel web component with glassmorphic design. Automatically adjusts to parent container size and slides up on hover.",
   "type": "module",
   "main": "./dist/my-control-panel.js",
@@ -42,9 +42,9 @@
   },
   "author": "",
   "license": "MIT",
-  "dependencies": {},
   "devDependencies": {
     "@types/node": "^20.10.0",
+    "happy-dom": "^20.0.10",
     "typescript": "^5.3.3",
     "vite": "^5.0.8",
     "vitest": "^1.1.0"

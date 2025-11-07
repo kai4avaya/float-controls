@@ -2,19 +2,28 @@ import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
 export default defineConfig(({ command, mode }) => {
+  const baseConfig = {
+    resolve: {
+      alias: {
+        '@': resolve(__dirname, './src')
+      }
+    },
+    // Vitest configuration (ignored by Vite)
+    test: {
+      environment: 'happy-dom',
+      globals: true,
+    },
+  };
+
   // In dev mode, configure for HTML serving
   if (command === 'serve') {
     return {
+      ...baseConfig,
       root: '.',
       server: {
         open: '/demo.html',
         fs: {
           allow: ['.']
-        }
-      },
-      resolve: {
-        alias: {
-          '@': resolve(__dirname, './src')
         }
       },
       // Serve dist files as static assets
@@ -24,6 +33,7 @@ export default defineConfig(({ command, mode }) => {
 
   // In build mode, use library configuration
   return {
+    ...baseConfig,
     build: {
       lib: {
         entry: resolve(__dirname, 'src/index.ts'),
@@ -34,11 +44,6 @@ export default defineConfig(({ command, mode }) => {
       rollupOptions: {},
       outDir: 'dist',
       sourcemap: true
-    },
-    resolve: {
-      alias: {
-        '@': resolve(__dirname, './src')
-      }
     }
   };
 });

@@ -509,6 +509,25 @@ Version 2.x uses vanilla Web Components and fixes this issue.
 
 ## Changelog
 
+### Version 2.1.8
+
+**Bug Fixes:**
+
+- ✅ **Fixed panel hiding incorrectly when mouse leaves panel but stays in container** - Panel now correctly stays visible when moving from panel to other elements within the container
+- ✅ **Added `elementFromPoint` fallback** - Improved reliability in test environments and browsers where `relatedTarget` may be unreliable
+- ✅ **Fixed global mouse tracking** - Prevents incorrect hiding in test environments where `getBoundingClientRect()` returns invalid values
+- ✅ **Improved mouse movement timeout handling** - Timeout now correctly resets on mouse movement within container
+
+**Technical Improvements:**
+
+- Enhanced hover detection with multiple fallback mechanisms (relatedTarget → elementFromPoint → boundingRect → global tracking)
+- Better handling of edge cases in synthetic event environments
+- More robust mouse position detection across different browser environments
+
+### Version 2.1.7
+
+- Initial stable release with improved hover behavior
+
 ### Version 2.0.0 (Breaking Changes)
 
 **Major Migration: Removed Lit Dependency**
