@@ -112,6 +112,7 @@ panel.config = {
   borderColor: 'rgba(255, 255, 255, 0.3)',
   transitionDuration: '0.6s',
   slideUpOffset: '-0.5rem',
+  hideDelay: 2000, // Stay visible for 2 seconds after mouse stops moving
   buttons: [
     // ... your buttons
   ]
@@ -231,6 +232,7 @@ interface ControlPanelConfig {
   // Animation
   transitionDuration?: string;  // Transition duration (default: '0.5s')
   slideUpOffset?: string;       // Slide up offset when visible (default: '-1rem')
+  hideDelay?: number;           // Delay in ms before hiding after mouse stops moving (default: 1500)
   
   // Controls
   buttons?: ControlButton[];    // Array of button configurations
