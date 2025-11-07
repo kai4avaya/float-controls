@@ -96,10 +96,13 @@ export class ControlPanelOverlay extends HTMLElement {
       :host {
         /* CRITICAL: Ensures the custom element tag doesn't introduce layout issues */
         display: contents;
+        /* Always allow clicks to pass through the host element */
+        pointer-events: none;
       }
 
       :host(.panel-host-visible) {
-        pointer-events: auto;
+        /* Keep pointer-events: none even when visible - clicks should pass through */
+        pointer-events: none;
       }
 
       /* Glass panel visual styling */
@@ -360,7 +363,7 @@ export class ControlPanelOverlay extends HTMLElement {
   }
 
   private handleMouseMove = () => {
-    // On ANY mouse movement, show the panel immediately
+    // On ANY mouse movement, show the panel (slide up)
     if (this.isMouseInside) {
       this.showPanel();
     }

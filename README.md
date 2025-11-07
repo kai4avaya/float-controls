@@ -1,6 +1,6 @@
 # Floating Controls
 
-A beautiful, customizable floating control panel web component built with vanilla Web Components. Features a stunning glassmorphic design that automatically adjusts to its parent container size and elegantly slides up **on hover** - no clicks required! Perfect for card interfaces, image galleries, dashboards, and any UI that needs elegant hover-activated controls.
+A beautiful, customizable floating control panel web component built with vanilla Web Components. Features a stunning glassmorphic design that automatically adjusts to its parent container size and elegantly slides up **on mouse movement** - no clicks required! Perfect for card interfaces, image galleries, dashboards, and any UI that needs elegant movement-activated controls.
 
 ![Version](https://img.shields.io/npm/v/floating-controls)
 ![License](https://img.shields.io/npm/l/floating-controls)
@@ -12,11 +12,11 @@ A beautiful, customizable floating control panel web component built with vanill
 
 ![Demo](assets/demo-controls.gif)
 
-The control panel elegantly slides up from the bottom when you **hover** over the parent container - no clicking required! It provides a beautiful glassmorphic interface for your controls with smooth animations and customizable styling.
+The control panel elegantly slides up from the bottom when you **move your mouse** over the parent container - no clicking required! It stays visible while you move, then automatically slides down after a configurable delay when movement stops. It provides a beautiful glassmorphic interface for your controls with smooth slide animations and customizable styling.
 
 ## Features
 
-- **? Hover-Only Activation**: No clicks required! The panel smoothly slides up on hover and hides when you move away
+- **? Movement-Based Activation**: No clicks required! The panel smoothly slides up when you move your mouse and automatically slides down after a delay when movement stops
 - **?? Glassmorphic Design**: Beautiful backdrop blur and translucent styling out of the box
 - **? Smooth Animations**: Elegant slide-up transitions with customizable timing and easing
 - **?? Framework Agnostic**: Works with React, Vue, Angular, Svelte, or vanilla HTML/JS
@@ -40,16 +40,25 @@ npm install floating-controls
 
 ### Basic Usage
 
+**Important**: The parent container must have `position: relative` (or `absolute`/`fixed`). The component will automatically add this if not present.
+
 ```html
 <!DOCTYPE html>
 <html>
 <head>
   <script type="module">
     import { ControlPanelOverlay } from 'floating-controls';
+    
+    // Register the custom element
+    if (!customElements.get('control-panel-overlay')) {
+      customElements.define('control-panel-overlay', ControlPanelOverlay);
+    }
   </script>
 </head>
 <body>
+  <!-- Parent container with position: relative -->
   <div style="position: relative; width: 400px; height: 300px; background: url('image.jpg');">
+    <!-- Place the component INSIDE the parent container -->
     <control-panel-overlay 
       label="Card Title" 
       subtitle="Card description">
@@ -58,6 +67,14 @@ npm install floating-controls
 </body>
 </html>
 ```
+
+**How it works:**
+1. Place `<control-panel-overlay>` **inside** a parent container
+2. The parent container should have `position: relative` (auto-added if missing)
+3. **Move your mouse** over the parent container → controls slide up
+4. **Keep moving** → controls stay visible
+5. **Stop moving** → controls slide down after delay (default: 1.5 seconds)
+6. **Move mouse away** → controls slide down immediately
 
 ### With Action Buttons
 
@@ -135,16 +152,23 @@ panel.config = {
 import { useEffect, useRef } from 'react';
 import { ControlPanelOverlay } from 'floating-controls';
 
+// Register the custom element once (e.g., in your main App.js or index.js)
+if (!customElements.get('control-panel-overlay')) {
+  customElements.define('control-panel-overlay', ControlPanelOverlay);
+}
+
 function Card({ image, title, subtitle }) {
   const panelRef = useRef(null);
 
   useEffect(() => {
+    // Configure the panel after it's mounted
     if (panelRef.current) {
       panelRef.current.config = {
+        hideDelay: 2000, // Stay visible for 2 seconds after mouse stops
         buttons: [
           {
             label: 'Like',
-            icon: '<svg>...</svg>',
+            icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>',
             action: () => console.log('Liked!')
           }
         ]
@@ -153,8 +177,10 @@ function Card({ image, title, subtitle }) {
   }, []);
 
   return (
+    // ✅ Parent container with position: relative
     <div style={{ position: 'relative', width: '400px', height: '300px' }}>
       <img src={image} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+      {/* ✅ Component inside parent */}
       <control-panel-overlay 
         ref={panelRef}
         label={title} 
@@ -169,8 +195,10 @@ function Card({ image, title, subtitle }) {
 
 ```vue
 <template>
+  <!-- ✅ Parent container with position: relative -->
   <div style="position: relative; width: 400px; height: 300px;">
     <img :src="image" :alt="title" style="width: 100%; height: 100%; object-fit: cover;" />
+    <!-- ✅ Component inside parent -->
     <control-panel-overlay 
       ref="panel"
       :label="title" 
@@ -183,15 +211,22 @@ function Card({ image, title, subtitle }) {
 import { ref, onMounted } from 'vue';
 import { ControlPanelOverlay } from 'floating-controls';
 
+// Register the custom element
+if (!customElements.get('control-panel-overlay')) {
+  customElements.define('control-panel-overlay', ControlPanelOverlay);
+}
+
 const panel = ref(null);
 
 onMounted(() => {
+  // Configure the panel after it's mounted
   if (panel.value) {
     panel.value.config = {
+      hideDelay: 2000, // Stay visible for 2 seconds after mouse stops
       buttons: [
         {
           label: 'Like',
-          icon: '<svg>...</svg>',
+          icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>',
           action: () => console.log('Liked!')
         }
       ]
@@ -354,10 +389,111 @@ npm test
 
 1. **Parent Detection**: The component automatically detects its parent element on mount
 2. **Position Injection**: Adds `position: relative` to the parent if not already set
-3. **Event Listeners**: Attaches mouse enter/leave listeners to the parent element
-4. **Slide Animation**: Smoothly slides up from the bottom when parent is hovered
-5. **Styling**: Uses CSS transforms and opacity for smooth animations
-6. **Customization**: All styling and controls configurable via the `config` property
+3. **Event Listeners**: Attaches mouse enter/leave/move listeners to the parent element
+4. **Slide Animation**: Smoothly slides up from the bottom when mouse moves over the parent
+5. **Auto-Hide**: Automatically slides down after a configurable delay when mouse movement stops
+6. **Styling**: Uses CSS transforms and opacity for smooth slide animations
+7. **Customization**: All styling and controls configurable via the `config` property
+
+## Usage Guidelines
+
+### ✅ Correct Usage
+
+```html
+<!-- ✅ CORRECT: Component inside parent with position: relative -->
+<div style="position: relative; width: 400px; height: 300px;">
+  <control-panel-overlay label="Title" subtitle="Subtitle"></control-panel-overlay>
+</div>
+
+<!-- ✅ CORRECT: Parent with position: absolute -->
+<div style="position: absolute; width: 100%; height: 100%;">
+  <control-panel-overlay label="Title"></control-panel-overlay>
+</div>
+
+<!-- ✅ CORRECT: Component will auto-add position: relative if missing -->
+<div style="width: 400px; height: 300px;">
+  <control-panel-overlay label="Title"></control-panel-overlay>
+</div>
+```
+
+### ❌ Incorrect Usage
+
+```html
+<!-- ❌ WRONG: Component outside parent container -->
+<control-panel-overlay label="Title"></control-panel-overlay>
+<div style="position: relative; width: 400px; height: 300px;">
+  <!-- Content here -->
+</div>
+
+<!-- ❌ WRONG: Parent without positioning (though component will try to fix this) -->
+<div style="width: 400px; height: 300px;">
+  <control-panel-overlay label="Title"></control-panel-overlay>
+</div>
+```
+
+### Key Points
+
+- **Placement**: Always place `<control-panel-overlay>` **inside** the parent container you want to attach controls to
+- **Parent Positioning**: Parent should have `position: relative`, `absolute`, or `fixed` (component auto-adds `relative` if missing)
+- **Mouse Interaction**: Controls slide up on **mouse movement**, not just hover
+- **Timing**: Controls stay visible while mouse moves, then slide down after `hideDelay` milliseconds (default: 1500ms)
+- **Configuration**: Set `config` property after the element is in the DOM (use `useEffect` in React, `onMounted` in Vue, or `DOMContentLoaded` in vanilla JS)
+
+## Troubleshooting
+
+### Controls don't slide up
+
+**Check these common issues:**
+
+1. **Wrong version**: If you see Lit-related errors, you're using version 1.x. Upgrade to 2.x:
+   ```bash
+   npm install floating-controls@latest
+   ```
+
+2. **Component placement**: Ensure `<control-panel-overlay>` is **inside** the parent container:
+   ```html
+   <!-- ✅ CORRECT -->
+   <div style="position: relative;">
+     <control-panel-overlay></control-panel-overlay>
+   </div>
+   
+   <!-- ❌ WRONG -->
+   <control-panel-overlay></control-panel-overlay>
+   <div style="position: relative;"></div>
+   ```
+
+3. **Mouse movement required**: Controls slide up on **mouse movement**, not just hover. Move your mouse over the parent container.
+
+4. **Parent positioning**: Parent should have `position: relative` (component auto-adds it, but explicit is better).
+
+5. **CSS conflicts**: Check if your CSS is overriding transitions:
+   ```css
+   /* Make sure nothing is overriding these */
+   .panel-base {
+     transition: transform 0.5s ease-out, opacity 0.5s ease;
+   }
+   ```
+
+6. **Element not registered**: Ensure you've registered the custom element:
+   ```javascript
+   if (!customElements.get('control-panel-overlay')) {
+     customElements.define('control-panel-overlay', ControlPanelOverlay);
+   }
+   ```
+
+### Lit Directive Error (Version 1.x)
+
+If you see this error:
+```
+TypeError: currentDirective._$initialize is not a function
+```
+
+**Solution**: Upgrade to version 2.x which removed Lit dependency:
+```bash
+npm install floating-controls@latest
+```
+
+Version 2.x uses vanilla Web Components and fixes this issue.
 
 ## Browser Support
 
