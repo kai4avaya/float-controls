@@ -123,7 +123,7 @@ export class ControlPanelOverlay extends HTMLElement {
         
         /* Hidden state: Off-screen below center */
         transform: translate(-50%, 100%); 
-        transition: transform 0.5s ease-out, opacity 0.5s ease;
+        transition: transform var(--transition-duration, 0.5s) ease-out, opacity var(--transition-duration, 0.5s) ease;
         opacity: 0;
         
         /* Prevents interaction when hidden - ensure ALL descendants also respect this */
@@ -138,7 +138,7 @@ export class ControlPanelOverlay extends HTMLElement {
 
       /* Visible state - override pointer-events for the panel */
       .panel-base.panel-visible {
-        transform: translate(-50%, -1rem); 
+        transform: translate(-50%, var(--slide-up-offset, -1rem)); 
         opacity: 1;
         pointer-events: auto !important;
       }
@@ -234,7 +234,8 @@ export class ControlPanelOverlay extends HTMLElement {
       backgroundColor = 'rgba(255, 255, 255, 0.1)',
       backdropBlur = '12px',
       borderColor = 'rgba(255, 255, 255, 0.2)',
-      transitionDuration = '0.5s'
+      transitionDuration = '0.5s',
+      slideUpOffset = '-1rem'
     } = this.config;
 
     let style = `width: ${width}; padding: ${padding}; border-radius: ${borderRadius}; `;
@@ -242,10 +243,11 @@ export class ControlPanelOverlay extends HTMLElement {
     style += `-webkit-backdrop-filter: blur(${backdropBlur}); `;
     style += `backdrop-filter: blur(${backdropBlur}); `;
     style += `border-color: ${borderColor}; `;
-    style += `transition: transform ${transitionDuration} ease-out, opacity ${transitionDuration} ease;`;
+    style += `--transition-duration: ${transitionDuration}; `;
+    style += `--slide-up-offset: ${slideUpOffset};`;
 
     // Note: transform and opacity are controlled by CSS class .panel-visible
-    // We don't set them inline to allow CSS transitions to work properly
+    // We use CSS custom properties for transition duration and slide offset
 
     return style;
   }
@@ -333,9 +335,9 @@ export class ControlPanelOverlay extends HTMLElement {
       // Mouse is moving from host to panel - keep visible
       return;
     }
-    // Mouse is truly leaving - hide immediately
+    // Mouse is truly leaving - slide down
     this.isMouseInside = false;
-    this.hidePanelImmediately();
+    this.hidePanelWithSlide();
   }
 
   private handlePanelMouseEnter = () => {
@@ -352,9 +354,9 @@ export class ControlPanelOverlay extends HTMLElement {
       // Mouse is moving from panel to host - keep visible
       return;
     }
-    // Mouse is leaving both panel and host - hide immediately
+    // Mouse is leaving both panel and host - slide down
     this.isMouseInside = false;
-    this.hidePanelImmediately();
+    this.hidePanelWithSlide();
   }
 
   private handleMouseMove = () => {
@@ -371,12 +373,12 @@ export class ControlPanelOverlay extends HTMLElement {
       this.hideTimeout = null;
     }
 
-    // Show immediately if not already visible
+    // Show with slide-up animation if not already visible
     if (!this.isVisible) {
       this.isVisible = true;
       this.hostElement?.classList.add('control-panel-active');
       this.classList.add("panel-host-visible");
-      this.updateRender();
+      this.updatePanelVisibility();
     }
 
     // Set timeout to hide after delay if mouse stops moving
@@ -384,24 +386,36 @@ export class ControlPanelOverlay extends HTMLElement {
     this.hideTimeout = window.setTimeout(() => {
       // Only hide if mouse is still inside (user stopped moving)
       if (this.isMouseInside) {
-        this.hidePanelImmediately();
+        this.hidePanelWithSlide();
       }
       this.hideTimeout = null;
     }, delay);
   }
 
-  private hidePanelImmediately() {
+  private hidePanelWithSlide() {
     // Clear any pending timeout
     if (this.hideTimeout !== null) {
       clearTimeout(this.hideTimeout);
       this.hideTimeout = null;
     }
 
-    // Hide immediately
+    // Hide with slide-down animation
     this.isVisible = false;
     this.hostElement?.classList.remove('control-panel-active');
     this.classList.remove("panel-host-visible");
-    this.updateRender();
+    this.updatePanelVisibility();
+  }
+
+
+  private updatePanelVisibility() {
+    // Update visibility class without recreating the panel
+    if (this.panelBase) {
+      if (this.isVisible) {
+        this.panelBase.classList.add('panel-visible');
+      } else {
+        this.panelBase.classList.remove('panel-visible');
+      }
+    }
   }
 
   private handleButtonClick(button: ControlButton) {
@@ -413,23 +427,66 @@ export class ControlPanelOverlay extends HTMLElement {
   private updateRender() {
     if (!this.shadowRoot) return;
 
-    // Remove existing panel if it exists (but keep style element)
-    const existingPanel = this.shadowRoot.querySelector('.panel-base');
-    if (existingPanel) {
-      existingPanel.remove();
+    // Create panel if it doesn't exist, otherwise update content
+    if (!this.panelBase) {
+      this.createPanel();
+    } else {
+      this.updatePanelContent();
     }
 
-    const buttons = this.config.buttons || [];
-    
+    // Update visibility state
+    this.updatePanelVisibility();
+  }
+
+  private createPanel() {
+    if (!this.shadowRoot) return;
+
     // Create panel base
     const panelBase = document.createElement('div');
-    panelBase.className = `panel-base glass-panel ${this.isVisible ? 'panel-visible' : ''}`;
+    panelBase.className = 'panel-base glass-panel';
     panelBase.style.cssText = this.getPanelStyleString();
     this.panelBase = panelBase;
 
-    // Create panel content
+    // Create panel content container
     const panelContent = document.createElement('div');
     panelContent.className = 'panel-content';
+    panelBase.appendChild(panelContent);
+
+    // Add slot for user content
+    const slot = document.createElement('slot');
+    panelBase.appendChild(slot);
+
+    // Append to shadow root
+    this.shadowRoot.appendChild(panelBase);
+
+    // Populate initial content
+    this.updatePanelContent();
+  }
+
+  private updatePanelContent() {
+    if (!this.panelBase || !this.shadowRoot) return;
+
+    // Update styles from config
+    this.panelBase.style.cssText = this.getPanelStyleString();
+
+    // Find or create content container
+    let panelContent = this.panelBase.querySelector('.panel-content') as HTMLElement;
+    if (!panelContent) {
+      panelContent = document.createElement('div');
+      panelContent.className = 'panel-content';
+      // Insert before slot
+      const slot = this.panelBase.querySelector('slot');
+      if (slot) {
+        this.panelBase.insertBefore(panelContent, slot);
+      } else {
+        this.panelBase.appendChild(panelContent);
+      }
+    }
+
+    // Clear existing content
+    panelContent.innerHTML = '';
+
+    const buttons = this.config.buttons || [];
 
     // Add text content if label or subtitle exists
     if (this.label || this.subtitle) {
@@ -478,15 +535,6 @@ export class ControlPanelOverlay extends HTMLElement {
 
       panelContent.appendChild(buttonGroup);
     }
-
-    panelBase.appendChild(panelContent);
-
-    // Add slot for user content
-    const slot = document.createElement('slot');
-    panelBase.appendChild(slot);
-
-    // Append to shadow root
-    this.shadowRoot.appendChild(panelBase);
   }
 }
 
